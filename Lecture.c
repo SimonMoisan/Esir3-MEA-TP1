@@ -125,8 +125,23 @@ int main (int argc, char *argv[]){
 
     // Deleting duplicate
     char **BUFFER_TWO = malloc(MAX_SIZE * sizeof(char*));
+    char *scanner_one = malloc(coverage * sizeof(char));
+    char *scanner_two = malloc(coverage * sizeof(char));
+    unsigned int scanner_cursor = 1;
+    scanner_one = BUFFER_ONE[0];
+    scanner_one = BUFFER_ONE[1];
+
+    /*
+    while (scanner_cursor < MAX_SIZE)
+    {
+        
+    }
+    */
+
 
     free(BUFFER_TWO);
+    free(scanner_one);
+    free(scanner_two);
 
     // Writing file
     printf("Writing file ...\n");
