@@ -40,6 +40,7 @@ int main (int argc, char *argv[]){
     volatile double t1;
     volatile double t2;
 
+    //#######################################################################################################
     // Get coverage
     printf("Analysing coverage ...\n");
     t1 = getTime();
@@ -50,6 +51,7 @@ int main (int argc, char *argv[]){
     printf (" - time: %1.2lf sec\n",t2-t1);
     fclose(fp);
 
+    //#######################################################################################################
     // Get lines number
     printf("Analysing line number ...\n");
     t1 = getTime();
@@ -88,6 +90,7 @@ int main (int argc, char *argv[]){
     //printf ("%d\n",lines);
     printf (" - time: %1.2lf sec\n",t2-t1);
 
+    //#######################################################################################################
     // Regularizing values and creating BUFFER
     printf("Creating primary Buffer ...\n");
     t1 = getTime();
@@ -101,6 +104,7 @@ int main (int argc, char *argv[]){
     t2 = getTime();
     printf (" - time: %1.2lf sec\n",t2-t1);
 
+    //#######################################################################################################
     // Buffering file content
     printf("Buffering file ...\n");
     t1 = getTime();
@@ -115,47 +119,79 @@ int main (int argc, char *argv[]){
     t2 = getTime();
     printf (" - time: %1.2lf sec\n",t2-t1);
 
+    //#######################################################################################################
     // Sorting the sequences by alphabetical order
     printf("Sorting buffer ...\n");
-    t1 = getTime();t1 = getTime();
+    t1 = getTime();
     qsort (BUFFER_ONE, MAX_SIZE, sizeof(char *), compare);
 
     t2 = getTime();
     printf (" - time: %1.2lf sec\n",t2-t1);
 
-    // Deleting duplicate
-    char **BUFFER_TWO = malloc(MAX_SIZE * sizeof(char*));
-    char *scanner_one = malloc(coverage * sizeof(char));
-    char *scanner_two = malloc(coverage * sizeof(char));
-    unsigned int scanner_cursor = 1;
-    scanner_one = BUFFER_ONE[0];
-    scanner_one = BUFFER_ONE[1];
-
-    /*
-    while (scanner_cursor < MAX_SIZE)
-    {
-        
-    }
-    */
-
-
-    free(BUFFER_TWO);
-    free(scanner_one);
-    free(scanner_two);
-
-    // Writing file
-    printf("Writing file ...\n");
-    t1 = getTime();
     fw = fopen("reads_sorted.fasta","w");
     for(int i = 0; i < MAX_SIZE; i++){
         fprintf (fw, "%s",BUFFER_ONE[i]);
     }
     fclose(fw);
+
+    //#######################################################################################################
+    // Deleting string without duplicate and saving strings with duplicate(s)
+    printf("Processing ...\n");
+    t1 = getTime();
+
+    char **BUFFER_TWO = malloc(MAX_SIZE * sizeof(char*));
+    //char *memory = malloc(coverage * sizeof(char));
+    volatile unsigned int scanner_cursor = 1;
+    volatile unsigned int buffer_two_cursor = 0;
+    volatile int zero_is_a_precedent_duplicate = 0;
+    volatile int str_cmp_res = 0;
+
+    while (scanner_cursor < MAX_SIZE)
+    {
+        //We save the comparaison between the strings of the two cursors
+        str_cmp_res = strcmp(BUFFER_ONE[scanner_cursor - 1], BUFFER_ONE[scanner_cursor]);
+
+        //If we know that the first cursor don't containt a previous duplicate
+        if(zero_is_a_precedent_duplicate == 0){
+
+            //If the strings are the sames, then we save one of them into the second buffer, and we activate the previous duplicate alert
+            if(str_cmp_res == 0){
+                BUFFER_TWO[buffer_two_cursor] = BUFFER_ONE[scanner_cursor - 1];
+                buffer_two_cursor++;
+                zero_is_a_precedent_duplicate = 1;
+            }
+        
+        //If we know that the first cursor containt a previous duplicate
+        }else{
+
+            //If the strings in the two cursor are differents we cancel the previous duplicate alert
+            if(str_cmp_res != 0){
+                zero_is_a_precedent_duplicate = 0;
+                
+            }
+        }
+        scanner_cursor++;
+    }
+
+    free(BUFFER_ONE);
     t2 = getTime();
     printf (" - time: %1.2lf sec\n",t2-t1);
 
+    //#######################################################################################################
+    // Writing file
+    printf("Writing file ...\n");
+    t1 = getTime();
+    fw = fopen("reads_processed.fasta","w");
+    for(int i = 0; i < buffer_two_cursor; i++){
+        fprintf (fw, "%s",BUFFER_TWO[i]);
+    }
+    fclose(fw);
+    t2 = getTime();
+    printf (" - time: %1.2lf sec\n",t2-t1);
+
+    //#######################################################################################################
     // Closing everything
-    free(BUFFER_ONE);
+    free(BUFFER_TWO);
     
 
 }
